@@ -14,6 +14,8 @@ source("src/get-data.R")
 # land use (condo, co-op, commercial, etc.), land area, assessment value,
 # sales price
 tax_facts <- read_tax_system_facts()
+
+# Filter for condos and residential structures sold in the last five years
 price_data <- tax_facts %>%
     filter(TAX_TYPE_DESCRIPTION == "Residential real property, including multifamily") %>%
     filter(LAND_USE_CODE %in% c("011", "012", "013", "014", "016", "017",
@@ -23,10 +25,15 @@ price_data <- tax_facts %>%
 
 price_data %>% arrange(PRICE)
 
-
+# Computer Assisted Mass Appraisal Files have data on structure characteristics
+# such as the number of bedrooms, heating, architechtural style
+# There are two files: condos and detached structures
 cama_condo <- read_cama_condo()
 cama_residential <- read_cama_residential()
 
+# Combine the two files together
 cama <- cama_residential %>% bind_rows(cama_condo)
 
-price_data %>% inner_join(cama, by = c("SSL" = "SSL"))
+# Join the two files by SSL (ID the DC government assigns to property)
+price_data <- price_data %>%
+    inner_join(cama, by = c("SSL" = "SSL"))
