@@ -73,3 +73,7 @@ read_cama_condo <- function(filepath = "data/Computer_Assisted_Mass_Appraisal__C
 read_tax_system_facts <- function(filepath = "data/Integrated_Tax_System_Public_Extract_Facts.csv") {
     readr::read_csv(filepath, guess_max = 1000)
 }
+
+read_tax_system_raw <- function(filepath = "data/Integrated_Tax_System_Public_Extract.csv") {
+    readr::read_csv(filepath, guess_max = 1000)
+}
