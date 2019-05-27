@@ -23,8 +23,6 @@ price_data <- tax_facts %>%
     filter(LAST_SALE_DATE >= "2014-01-01") %>%
     mutate(PRICE = LAST_SALE_PRICE/LANDAREA)
 
-price_data %>% arrange(PRICE)
-
 # Computer Assisted Mass Appraisal Files have data on structure characteristics
 # such as the number of bedrooms, heating, architechtural style
 # There are two files: condos and detached structures
@@ -32,8 +30,31 @@ cama_condo <- read_cama_condo()
 cama_residential <- read_cama_residential()
 
 # Combine the two files together
-cama <- cama_residential %>% bind_rows(cama_condo)
+cama <- cama_residential %>%
+    bind_rows(cama_condo)
 
 # Join the two files by SSL (ID the DC government assigns to property)
+# Filter for only QUALIFIED sales
 price_data <- price_data %>%
-    inner_join(cama, by = c("SSL" = "SSL"))
+    inner_join(cama, by = c("SSL" = "SSL")) %>%
+    filter(QUALIFIED == "Q")
+
+# Graph stuff
+ggplot(data = price_data) +
+    geom_point(aes(
+        x = LANDAREA.x,
+        y = PRICE.x,
+        color = factor(BEDRM))) +
+    scale_x_log10(name = "LAND AREA") +
+    scale_y_log10(name = "PRICE/SQ. FT.")
+
+# Model 1
+glm(log(PRICE.x) ~ log(LANDAREA.x), data = price_data)
+
+# The integrated tax system public extract contains more information
+# about the property, including type of sale
+#tax_raw <- read_tax_system_raw() %>%
+#  select(SSL, ACCEPTCODE)
+
+#price_data <- price_data %>%
+#  inner_join(tax_raw, by = c("SSL" = "SSL"))
