@@ -6,6 +6,7 @@
 
 
 library(tidyverse)
+# library(caret)
 
 # Source helper scrpt
 source("src/get-data.R")
@@ -48,8 +49,8 @@ ggplot(data = price_data) +
     scale_x_log10(name = "LAND AREA") +
     scale_y_log10(name = "PRICE/SQ. FT.")
 
-# Model 1
-glm(log(PRICE.x) ~ log(LANDAREA.x), data = price_data)
+
+
 
 # The integrated tax system public extract contains more information
 # about the property, including type of sale
@@ -58,3 +59,41 @@ glm(log(PRICE.x) ~ log(LANDAREA.x), data = price_data)
 
 #price_data <- price_data %>%
 #  inner_join(tax_raw, by = c("SSL" = "SSL"))
+
+
+weird_props = "1314 W ST|304 Q ST NW|1433 R ST NW|1111  23RD ST NW|1414 22ND ST NW|1391 PENNSYLVANIA AVE SE|0045  SUTTON SQ SW|631 D ST NW|2328 CHAMPLAIN|777 7TH ST NW|2501  M ST NW|1111  24TH ST|1111  23RD ST NW|475 K ST NW|1080 WISCONSIN AVE NW|1324 14TH ST NW|920 I ST NW"
+qplot(data = price_data %>%
+          filter(!grepl(weird_props, PROPERTY_ADDRESS),
+                 BATHRM == 1,
+                 BEDRM == 1,
+                 LAST_SALE_DATE > "2018-01-01",
+                 OTR_NEIGHBORHOOD_NAME %in% c("FOGGY BOTTOM")),
+      y = PRICE.x,
+      x = LANDAREA.x,
+      facets = ~ LAND_USE_DESCRIPTION,
+      log = "xy") + geom_smooth(method = "lm", se = FALSE) +
+    theme(legend.position = "none")
+
+model_data <- price_data %>%
+    filter(!grepl(weird_props, PROPERTY_ADDRESS),
+           BATHRM == 1,
+           BEDRM == 1,
+           LAST_SALE_DATE > "2018-01-01",
+           OTR_NEIGHBORHOOD_NAME %in% c("TAKOMA"))
+
+model_1 <- glm(PRICE.x ~ log(LANDAREA.x),
+               data = model_data,
+               family = gaussian(link = "log"))
+
+model_2 <- glm(PRICE.x ~ log(LANDAREA.x),
+               data = model_data,
+               family = Gamma)
+
+model_3 <- glm(log(PRICE.x) ~ log(LANDAREA.x),
+               data = model_data)
+
+
+newdata <- data.frame(LANDAREA.x = 574)
+predict(model_1, newdata = newdata, type = "response")
+predict(model_2, newdata = newdata, type = "response")
+predict(model_3, newdata = newdata, type = "response")
