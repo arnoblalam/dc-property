@@ -77,9 +77,9 @@ qplot(data = price_data %>%
 model_data <- price_data %>%
     filter(!grepl(weird_props, PROPERTY_ADDRESS),
            BATHRM == 1,
-           BEDRM == 1,
+           BEDRM == 2,
            LAST_SALE_DATE > "2018-01-01",
-           OTR_NEIGHBORHOOD_NAME %in% c("TAKOMA"))
+           OTR_NEIGHBORHOOD_NAME %in% c("TRINIDAD"))
 
 model_1 <- glm(PRICE.x ~ log(LANDAREA.x),
                data = model_data,
@@ -87,13 +87,13 @@ model_1 <- glm(PRICE.x ~ log(LANDAREA.x),
 
 model_2 <- glm(PRICE.x ~ log(LANDAREA.x),
                data = model_data,
-               family = Gamma)
+               family = Gamma(link = "log"))
 
 model_3 <- glm(log(PRICE.x) ~ log(LANDAREA.x),
                data = model_data)
 
 
-newdata <- data.frame(LANDAREA.x = 574)
+newdata <- data.frame(LANDAREA.x = 677)
 predict(model_1, newdata = newdata, type = "response")
 predict(model_2, newdata = newdata, type = "response")
-predict(model_3, newdata = newdata, type = "response")
+exp(predict(model_3, newdata = newdata, type = "response"))
