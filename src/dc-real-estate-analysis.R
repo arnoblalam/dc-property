@@ -64,15 +64,13 @@ ggplot(data = price_data) +
 weird_props = "1314 W ST|304 Q ST NW|1433 R ST NW|1111  23RD ST NW|1414 22ND ST NW|1391 PENNSYLVANIA AVE SE|0045  SUTTON SQ SW|631 D ST NW|2328 CHAMPLAIN|777 7TH ST NW|2501  M ST NW|1111  24TH ST|1111  23RD ST NW|475 K ST NW|1080 WISCONSIN AVE NW|1324 14TH ST NW|920 I ST NW"
 qplot(data = price_data %>%
           filter(!grepl(weird_props, PROPERTY_ADDRESS),
-                 BATHRM == 1,
-                 BEDRM == 1,
                  LAST_SALE_DATE > "2018-01-01",
-                 OTR_NEIGHBORHOOD_NAME %in% c("FOGGY BOTTOM")),
+                 OTR_NEIGHBORHOOD_NAME == "BRIGHTWOOD"),
       y = PRICE.x,
       x = LANDAREA.x,
-      facets = ~ LAND_USE_DESCRIPTION,
-      log = "xy") + geom_smooth(method = "lm", se = FALSE) +
-    theme(legend.position = "none")
+      color = LAND_USE_DESCRIPTION) +
+    facet_wrap(~ BATHRM, scales = "free")# +
+#    theme(legend.position = "none")
 
 model_data <- price_data %>%
     filter(!grepl(weird_props, PROPERTY_ADDRESS),
@@ -91,6 +89,8 @@ model_2 <- glm(PRICE.x ~ log(LANDAREA.x),
 
 model_3 <- glm(log(PRICE.x) ~ log(LANDAREA.x),
                data = model_data)
+
+
 
 
 newdata <- data.frame(LANDAREA.x = 677)
